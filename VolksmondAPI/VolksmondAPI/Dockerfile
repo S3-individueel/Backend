@@ -7,8 +7,8 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
-COPY ["VolksmondAPI/VolksmondAPI.csproj", "VolksmondAPI/"]
-RUN dotnet restore "VolksmondAPI/VolksmondAPI.csproj"
+COPY ["VolksmondAPI.csproj", ""]
+RUN dotnet restore "VolksmondAPI.csproj"
 COPY . .
 WORKDIR "/src/VolksmondAPI"
 RUN dotnet build "VolksmondAPI.csproj" -c Release -o /app/build
