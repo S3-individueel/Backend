@@ -10,6 +10,9 @@ env:
   CONTAINER_REGISTRY_LOGIN_SERVER: volksmondapi20230601005933.azurecr.io
   DOTNET_CORE_VERSION: 7.0.x
   PROJECT_NAME_FOR_DOCKER: volksmondapi
+defaults:
+  run:
+    working-directory: VolksmondAPI
 jobs:
   build:
     runs-on: ubuntu-latest
