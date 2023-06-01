@@ -7,6 +7,6 @@
         public string? Lastname { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? Gender { get; set; }
-        public byte[]? Photo { get; set; }
+        public string? Photo { get; set; }
     }
 }
