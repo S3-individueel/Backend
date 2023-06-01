@@ -84,7 +84,7 @@ namespace VolksmondAPI.Controllers
         // POST: api/Citizens
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Citizen>> PostCitizen([FromBody]Citizen citizen)
+        public async Task<ActionResult<Citizen>> PostCitizen([FromHeader]Citizen citizen)
         {
           if (_context.Citizen == null)
           {
