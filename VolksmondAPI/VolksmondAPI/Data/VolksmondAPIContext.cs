@@ -15,5 +15,12 @@ namespace VolksmondAPI.Data
         }
 
         public DbSet<VolksmondAPI.Models.Citizen> Citizen { get; set; } = default!;
+        public DbSet<VolksmondAPI.Models.Problem> Problem{ get; set; } = default!;
+        public DbSet<VolksmondAPI.Models.Referendum> Referendum { get; set; } = default!;
+        public DbSet<VolksmondAPI.Models.ReferendumVote> ReferendumVote{ get; set; } = default!;
+        public DbSet<VolksmondAPI.Models.Reply> Reply { get; set; } = default!;
+        public DbSet<VolksmondAPI.Models.ReplyVote> ReplyVote { get; set; } = default!;
+        public DbSet<VolksmondAPI.Models.Solution> Solution { get; set; } = default!;
+        public DbSet<VolksmondAPI.Models.SolutionVote> SolutionVote { get; set; } = default!;
     }
 }
