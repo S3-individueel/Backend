@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using NuGet.Packaging;
 using VolksmondAPI.Data;
 using VolksmondAPI.Models;
 
@@ -25,11 +27,20 @@ namespace VolksmondAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Solution>>> GetSolution()
         {
-          if (_context.Solution == null)
-          {
-              return NotFound();
-          }
-            return await _context.Solution.ToListAsync();
+            if (_context.Solution == null)
+            {
+                return NotFound();
+            }
+            var solutions = await _context.Solution.ToListAsync();
+            solutions
+                .ForEach(s => s.Score = _context.SolutionVote
+                .Where(sv => sv.SolutionId == s.Id)
+                .Sum(sv => sv.Vote));
+            solutions
+                .ForEach(s => s.Votes = _context.SolutionVote
+                .Where(sv => sv.SolutionId == s.Id && sv.CitizenId == 2)
+                .ToList());
+            return solutions;
         }
 
         // GET: api/Solutions/5
@@ -39,8 +50,10 @@ namespace VolksmondAPI.Controllers
           if (_context.Solution == null)
           {
               return NotFound();
-          }
+            }
             var solution = await _context.Solution.FindAsync(id);
+            solution.Score = _context.SolutionVote.Where(sv => sv.SolutionId == id).Sum(sv => sv.Vote);
+            solution.Votes = await _context.SolutionVote.Where(sv => sv.SolutionId == id && sv.CitizenId == 2).ToListAsync();
 
             if (solution == null)
             {
@@ -111,6 +124,29 @@ namespace VolksmondAPI.Controllers
             }
 
             _context.Solution.Remove(solution);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // POST: api/Solutions/5
+        [HttpPost("{id}/Vote")]
+        public async Task<IActionResult> Vote(int id, [FromBody]SolutionVote _vote)
+        {
+            if (_context.Solution == null)
+            {
+                return NotFound();
+            }
+            var vote = _context.SolutionVote.FirstOrDefault(v => v.CitizenId == _vote.CitizenId && v.SolutionId == _vote.SolutionId);
+            if (vote == null)
+            {
+                _context.SolutionVote.Add(_vote);
+            }
+            else
+            {
+                vote.Vote = _vote.Vote;
+                _context.Entry(vote).State = EntityState.Modified;
+            }
             await _context.SaveChangesAsync();
 
             return NoContent();
