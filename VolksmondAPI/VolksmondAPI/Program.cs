@@ -1,15 +1,10 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using VolksmondAPI.Data;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<VolksmondAPIContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("VolksmondAPIContext") ?? throw new InvalidOperationException("Connection string 'VolksmondAPIContext' not found."))); 
-builder.Services.AddDefaultIdentity<Account>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<VolksmondAPIContext>();
-;
+    options.UseSqlServer(builder.Configuration.GetConnectionString("VolksmondAPIContext") ?? throw new InvalidOperationException("Connection string 'VolksmondAPIContext' not found.")));
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<VolksmondAPIContext>();
 // Add services to the container.
 
 builder.Services.AddControllers();
