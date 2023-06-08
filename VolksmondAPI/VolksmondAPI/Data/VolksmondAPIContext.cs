@@ -9,13 +9,14 @@ using VolksmondAPI.Models;
 
 namespace VolksmondAPI.Data
 {
-    public class VolksmondAPIContext : DbContext
+    public class VolksmondAPIContext : IdentityDbContext<Account>
     {
         public VolksmondAPIContext (DbContextOptions<VolksmondAPIContext> options)
             : base(options)
         {
         }
 
+        public DbSet<VolksmondAPI.Models.Account> Account { get; set; } = default!;
         public DbSet<VolksmondAPI.Models.Citizen> Citizen { get; set; } = default!;
         public DbSet<VolksmondAPI.Models.Problem> Problem{ get; set; } = default!;
         public DbSet<VolksmondAPI.Models.Referendum> Referendum { get; set; } = default!;

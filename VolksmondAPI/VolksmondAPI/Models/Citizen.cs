@@ -1,4 +1,6 @@
-﻿namespace VolksmondAPI.Models
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace VolksmondAPI.Models
 {
     public class Citizen
     {

@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Fluent.Infrastructure.FluentModel;
+using Microsoft.AspNet.Identity.Owin;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -31,7 +34,8 @@ namespace VolksmondAPI.Controllers
             {
                 return NotFound();
             }
-            var solutions = await _context.Solution.ToListAsync();
+
+                var solutions = await _context.Solution.ToListAsync();
             solutions
                 .ForEach(s => s.Score = _context.SolutionVote
                 .Where(sv => sv.SolutionId == s.Id)
