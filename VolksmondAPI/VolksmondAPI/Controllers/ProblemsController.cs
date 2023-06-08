@@ -50,6 +50,25 @@ namespace VolksmondAPI.Controllers
             return problem;
         }
 
+        [HttpGet("{id}/Solutions")]
+        public async Task<ActionResult<Solution>> GetSolutionByProblemId(int id)
+        {
+            if (_context.Solution == null)
+            {
+                return NotFound();
+            }
+            var solution = await _context.Solution.FirstAsync(s => s.ProblemId == id);
+            solution.Score = _context.SolutionVote.Where(sv => sv.SolutionId == id).Sum(sv => sv.Vote);
+            solution.Votes = await _context.SolutionVote.Where(sv => sv.SolutionId == id && sv.CitizenId == 2).ToListAsync();
+
+            if (solution == null)
+            {
+                return NotFound();
+            }
+
+            return solution;
+        }
+
         // PUT: api/Problems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
