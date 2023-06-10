@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging;
+using NuGet.Protocol;
 using VolksmondAPI.Data;
 using VolksmondAPI.Models;
 
@@ -119,25 +120,35 @@ namespace VolksmondAPI.Controllers
 
         // POST: api/Replies/5
         [HttpPost("{id}/Vote")]
-        public async Task<IActionResult> Vote(int id, [FromBody] ReplyVote _vote)
+        public async Task<ActionResult<object>> Vote(int id, [FromBody] ReplyVote vote)
         {
-            if (_context.Solution == null)
+            var reply = await _context.Reply.FindAsync(id);
+            if (reply == null)
             {
                 return NotFound();
             }
-            var vote = _context.ReplyVote.FirstOrDefault(v => v.CitizenId == _vote.CitizenId && v.ReplyId == _vote.ReplyId);
-            if (vote == null)
+
+            var existingVote = await _context.ReplyVote.FirstOrDefaultAsync(v => v.CitizenId == vote.CitizenId && v.ReplyId == vote.ReplyId);
+            if (existingVote == null)
             {
-                _context.ReplyVote.Add(_vote);
+                _context.ReplyVote.Add(vote);
             }
             else
             {
-                vote.Vote = _vote.Vote;
-                _context.Entry(vote).State = EntityState.Modified;
+                if (existingVote.Vote == vote.Vote)
+                    existingVote.Vote = 0;
+                else
+                    existingVote.Vote = vote.Vote;
+
+                _context.Entry(existingVote).State = EntityState.Modified;
             }
+
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            int score = await _context.ReplyVote.Where(r => r.ReplyId == vote.ReplyId).SumAsync(r => r.Vote);
+            int voteId = existingVote != null ? existingVote.Id : vote.Id;
+
+            return new { id = voteId, score };
         }
 
         private bool ReplyExists(int id)
