@@ -35,6 +35,7 @@ namespace VolksmondAPI.Controllers
             foreach (var problem in problems)
             {
                 problem.Citizen = await _context.Citizen.FirstAsync(c => c.Id == problem.CitizenId);
+                problem.Referendums = await _context.Referendum.Where(r => r.ProblemId == problem.Id).ToListAsync();
             }
             return problems;
         }
@@ -49,7 +50,7 @@ namespace VolksmondAPI.Controllers
           }
             var problem = await _context.Problem.FindAsync(id);
             problem.Citizen = await _context.Citizen.FirstAsync(c => c.Id == problem.CitizenId);
-
+            problem.Referendums = await _context.Referendum.Where(r => r.ProblemId == problem.Id).ToListAsync();
             if (problem == null)
             {
                 return NotFound();
@@ -122,6 +123,13 @@ namespace VolksmondAPI.Controllers
               return Problem("Entity set 'VolksmondAPIContext.Problem'  is null.");
           }
             _context.Problem.Add(problem);
+            await _context.SaveChangesAsync();
+
+            Referendum referendum = new Referendum();
+            referendum.ProblemId = _context.Problem.Last().Id;
+            referendum.VotingStart = DateTime.Now.AddMinutes(1);
+            referendum.VotingEnd = DateTime.Now.AddMinutes(2);
+            _context.Referendum.Add(referendum);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetProblem", new { id = problem.Id }, problem);

@@ -92,8 +92,17 @@ namespace VolksmondAPI.Controllers
           {
               return Problem("Entity set 'VolksmondAPIContext.Reply'  is null.");
           }
+            reply.IsDeleted = false;
+            reply.IsPinned = false;
             _context.Reply.Add(reply);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
 
             return CreatedAtAction("GetReply", new { id = reply.Id }, reply);
         }

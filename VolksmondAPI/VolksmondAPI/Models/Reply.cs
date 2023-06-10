@@ -9,9 +9,10 @@ namespace VolksmondAPI.Models
         public int SolutionId { get; set; }
         public int? ReplyId { get; set; }
         public string? Text { get; set; }
-        public bool IsDeleted { get; set; }
-        public bool IsPinned { get; set; }
-
+        public bool? IsDeleted { get; set; }
+        public bool? IsPinned { get; set; }
+        
+        [NotMapped]
         public virtual Citizen? Citizen { get; set; }
         [ForeignKey(nameof(Reply))]
         public virtual ICollection<ReplyVote>? Votes { get; set; }

@@ -9,6 +9,7 @@
         public string? Description { get; set; }
 
         public virtual ICollection<Referendum>? Referendums { get; set;}
+        //public virtual Referendum Referendum { get; set;}
         public virtual ICollection<Solution>? Solutions { get; set; }
         public virtual Citizen? Citizen { get; set;}
     }

@@ -159,26 +159,37 @@ namespace VolksmondAPI.Controllers
 
         // POST: api/Solutions/5
         [HttpPost("{id}/Vote")]
-        public async Task<IActionResult> Vote(int id, [FromBody]SolutionVote _vote)
+        public async Task<ActionResult<object>> Vote(int id, [FromBody] SolutionVote _vote)
         {
-            if (_context.Solution == null)
+            var solution = await _context.Solution.FindAsync(id);
+            if (solution == null)
             {
                 return NotFound();
             }
-            var vote = _context.SolutionVote.FirstOrDefault(v => v.CitizenId == _vote.CitizenId && v.SolutionId == _vote.SolutionId);
-            if (vote == null)
+
+            var existingVote = await _context.SolutionVote.FirstOrDefaultAsync(v => v.CitizenId == _vote.CitizenId && v.SolutionId == _vote.SolutionId);
+            if (existingVote == null)
             {
                 _context.SolutionVote.Add(_vote);
             }
             else
             {
-                vote.Vote = _vote.Vote;
-                _context.Entry(vote).State = EntityState.Modified;
+                if (existingVote.Vote == _vote.Vote)
+                    existingVote.Vote = 0;
+                else
+                    existingVote.Vote = _vote.Vote;
+
+                _context.Entry(existingVote).State = EntityState.Modified;
             }
+
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            int score = await _context.SolutionVote.Where(sv => sv.SolutionId == _vote.SolutionId).SumAsync(sv => sv.Vote);
+            int voteId = existingVote != null ? existingVote.Id : _vote.Id;
+
+            return new { id = voteId, score };
         }
+
 
         private bool SolutionExists(int id)
         {
