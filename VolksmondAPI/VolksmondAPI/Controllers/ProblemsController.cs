@@ -4,9 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using VolksmondAPI.Data;
 using VolksmondAPI.Models;
+using Solution = VolksmondAPI.Models.Solution;
 
 namespace VolksmondAPI.Controllers
 {
@@ -25,11 +27,16 @@ namespace VolksmondAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Problem>>> GetProblem()
         {
-          if (_context.Problem == null)
-          {
-              return NotFound();
-          }
-            return await _context.Problem.ToListAsync();
+            if (_context.Problem == null)
+            {
+                return NotFound();
+            }
+            var problems = await _context.Problem.ToListAsync();
+            foreach (var problem in problems)
+            {
+                problem.Citizen = await _context.Citizen.FirstAsync(c => c.Id == problem.CitizenId);
+            }
+            return problems;
         }
 
         // GET: api/Problems/5
@@ -41,6 +48,7 @@ namespace VolksmondAPI.Controllers
               return NotFound();
           }
             var problem = await _context.Problem.FindAsync(id);
+            problem.Citizen = await _context.Citizen.FirstAsync(c => c.Id == problem.CitizenId);
 
             if (problem == null)
             {
@@ -51,22 +59,26 @@ namespace VolksmondAPI.Controllers
         }
 
         [HttpGet("{id}/Solutions")]
-        public async Task<ActionResult<Solution>> GetSolutionByProblemId(int id)
+        public async Task<ActionResult<IEnumerable<Solution>>> GetSolutionByProblemId(int id)
         {
             if (_context.Solution == null)
             {
                 return NotFound();
             }
-            var solution = await _context.Solution.FirstAsync(s => s.ProblemId == id);
-            solution.Score = _context.SolutionVote.Where(sv => sv.SolutionId == id).Sum(sv => sv.Vote);
-            solution.Votes = await _context.SolutionVote.Where(sv => sv.SolutionId == id && sv.CitizenId == 2).ToListAsync();
+            var solutions = await _context.Solution.Where(s => s.ProblemId == id).ToListAsync();
+            foreach (var solution in solutions)
+            {
+                solution.Score = _context.SolutionVote.Where(sv => sv.SolutionId == solution.Id).Sum(sv => sv.Vote);
+                solution.Citizen = await _context.Citizen.FirstAsync(c => c.Id == solution.CitizenId);
+            }
+            //solution.Votes = await _context.SolutionVote.Where(sv => sv.SolutionId == id && sv.CitizenId == 2).ToListAsync();
 
-            if (solution == null)
+            if (solutions == null)
             {
                 return NotFound();
             }
 
-            return solution;
+            return solutions;
         }
 
         // PUT: api/Problems/5

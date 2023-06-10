@@ -4,11 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Packaging;
+using NuGet.Protocol;
 using VolksmondAPI.Data;
 using VolksmondAPI.Models;
+using Solution = VolksmondAPI.Models.Solution;
 
 namespace VolksmondAPI.Controllers
 {
@@ -40,7 +43,31 @@ namespace VolksmondAPI.Controllers
                 .ForEach(s => s.Votes = _context.SolutionVote
                 .Where(sv => sv.SolutionId == s.Id && sv.CitizenId == 2)
                 .ToList());
+            foreach (var solution in solutions)
+            {
+                solution.Citizen = await _context.Citizen.FirstAsync(c => c.Id == solution.CitizenId);
+            }
             return solutions;
+        }
+
+
+
+        // GET: api/Solutions/{solutionId}/Replies
+        [HttpGet("{solutionId}/Replies")]
+        public async Task<ActionResult<IEnumerable<Reply>>> GetRepliesBySolutionId(int solutionId)
+        {
+            if (_context.Reply == null)
+            {
+                return NotFound();
+            }
+            var replies = await _context.Reply.Where(r => r.SolutionId == solutionId).ToListAsync();
+            foreach (var reply in replies)
+            {
+                reply.Score = _context.ReplyVote.Where(sv => sv.ReplyId == reply.Id).Sum(sv => sv.Vote);
+                reply.Citizen = await _context.Citizen.FirstAsync(c => c.Id == reply.CitizenId);
+            }
+            replies.RemoveAll(r => r.ReplyId != null);
+            return replies;
         }
 
         // GET: api/Solutions/5
@@ -54,6 +81,7 @@ namespace VolksmondAPI.Controllers
             var solution = await _context.Solution.FindAsync(id);
             solution.Score = _context.SolutionVote.Where(sv => sv.SolutionId == id).Sum(sv => sv.Vote);
             solution.Votes = await _context.SolutionVote.Where(sv => sv.SolutionId == id && sv.CitizenId == 2).ToListAsync();
+            solution.Citizen = await _context.Citizen.FirstAsync(c => c.Id == solution.CitizenId);
 
             if (solution == null)
             {

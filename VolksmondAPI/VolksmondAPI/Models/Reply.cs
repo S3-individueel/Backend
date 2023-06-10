@@ -12,9 +12,12 @@ namespace VolksmondAPI.Models
         public bool IsDeleted { get; set; }
         public bool IsPinned { get; set; }
 
-        public virtual ICollection<Reply>? Replies { get; set; }
-
+        public virtual Citizen? Citizen { get; set; }
         [ForeignKey(nameof(Reply))]
         public virtual ICollection<ReplyVote>? Votes { get; set; }
+        public virtual ICollection<Reply>? Replies { get; set; }
+
+        [NotMapped]
+        public virtual int? Score { get; set; }
     }
 }

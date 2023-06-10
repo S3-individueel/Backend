@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VolksmondAPI.Data;
 
@@ -11,9 +12,11 @@ using VolksmondAPI.Data;
 namespace VolksmondAPI.Migrations
 {
     [DbContext(typeof(VolksmondAPIContext))]
-    partial class VolksmondAPIContextModelSnapshot : ModelSnapshot
+    [Migration("20230609164909_solutionCitizen")]
+    partial class solutionCitizen
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -140,9 +143,6 @@ namespace VolksmondAPI.Migrations
                     b.Property<bool>("IsPinned")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("Reply")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ReplyId")
                         .HasColumnType("int");
 
@@ -154,9 +154,7 @@ namespace VolksmondAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CitizenId");
-
-                    b.HasIndex("Reply");
+                    b.HasIndex("ReplyId");
 
                     b.HasIndex("SolutionId");
 
@@ -174,6 +172,9 @@ namespace VolksmondAPI.Migrations
                     b.Property<int>("CitizenId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("Reply")
+                        .HasColumnType("int");
+
                     b.Property<int>("ReplyId")
                         .HasColumnType("int");
 
@@ -182,7 +183,7 @@ namespace VolksmondAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ReplyId");
+                    b.HasIndex("Reply");
 
                     b.ToTable("ReplyVote");
                 });
@@ -260,32 +261,22 @@ namespace VolksmondAPI.Migrations
 
             modelBuilder.Entity("VolksmondAPI.Models.Reply", b =>
                 {
-                    b.HasOne("VolksmondAPI.Models.Citizen", "Citizen")
-                        .WithMany()
-                        .HasForeignKey("CitizenId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("VolksmondAPI.Models.Reply", null)
                         .WithMany("Replies")
-                        .HasForeignKey("Reply");
+                        .HasForeignKey("ReplyId");
 
                     b.HasOne("VolksmondAPI.Models.Solution", null)
                         .WithMany("Replies")
                         .HasForeignKey("SolutionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Citizen");
                 });
 
             modelBuilder.Entity("VolksmondAPI.Models.ReplyVote", b =>
                 {
                     b.HasOne("VolksmondAPI.Models.Reply", null)
                         .WithMany("Votes")
-                        .HasForeignKey("ReplyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Reply");
                 });
 
             modelBuilder.Entity("VolksmondAPI.Models.Solution", b =>

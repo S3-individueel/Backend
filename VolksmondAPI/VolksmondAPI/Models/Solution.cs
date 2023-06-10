@@ -15,6 +15,18 @@ namespace VolksmondAPI.Models
         public virtual ICollection<SolutionVote>? Votes { get; set; }
         public virtual ICollection<Reply>? Replies { get; set; }
 
+        public virtual Citizen? Citizen { get; set; }
+        //{
+        //    get { return Citizen; }
+        //    set
+        //    {
+        //        Citizen.Firstname = value.Firstname;
+        //        Citizen.Lastname = value.Lastname;
+        //        Citizen.Photo = value.Photo;
+        //        Citizen.DateOfBirth = value.DateOfBirth;
+        //    }
+        //}
+
         public Solution()
         {
             Votes = new List<SolutionVote>();

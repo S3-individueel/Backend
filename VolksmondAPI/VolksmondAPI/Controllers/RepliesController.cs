@@ -117,6 +117,29 @@ namespace VolksmondAPI.Controllers
             return NoContent();
         }
 
+        // POST: api/Replies/5
+        [HttpPost("{id}/Vote")]
+        public async Task<IActionResult> Vote(int id, [FromBody] ReplyVote _vote)
+        {
+            if (_context.Solution == null)
+            {
+                return NotFound();
+            }
+            var vote = _context.ReplyVote.FirstOrDefault(v => v.CitizenId == _vote.CitizenId && v.ReplyId == _vote.ReplyId);
+            if (vote == null)
+            {
+                _context.ReplyVote.Add(_vote);
+            }
+            else
+            {
+                vote.Vote = _vote.Vote;
+                _context.Entry(vote).State = EntityState.Modified;
+            }
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         private bool ReplyExists(int id)
         {
             return (_context.Reply?.Any(e => e.Id == id)).GetValueOrDefault();
