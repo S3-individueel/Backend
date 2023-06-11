@@ -51,6 +51,22 @@ namespace VolksmondAPI.Controllers
             var problem = await _context.Problem.FindAsync(id);
             problem.Citizen = await _context.Citizen.FirstAsync(c => c.Id == problem.CitizenId);
             problem.Referendums = await _context.Referendum.Where(r => r.ProblemId == problem.Id).ToListAsync();
+
+            foreach(var referendum in problem.Referendums)
+            {
+                referendum.Votes = await _context.ReferendumVote.Where(v => v.ReferendumId == referendum.Id).ToListAsync();
+                var winningSolutionId = referendum.Votes?
+                    .Where(vote => vote.ReferendumId == referendum.Id)
+                    .GroupBy(vote => vote.SolutionId)
+                    .OrderByDescending(group => group.Count())
+                    .Select(group => group.Key)
+                    .FirstOrDefault();
+
+                var winningSolution = _context.Solution.FirstOrDefault(solution => solution.Id == winningSolutionId);
+                referendum.WinningSolution = winningSolution;
+                referendum.WinningSolution.Problem = null;
+            }
+
             if (problem == null)
             {
                 return NotFound();
@@ -126,7 +142,7 @@ namespace VolksmondAPI.Controllers
             await _context.SaveChangesAsync();
 
             Referendum referendum = new Referendum();
-            referendum.ProblemId = _context.Problem.Last().Id;
+            referendum.ProblemId = _context.Problem.Order().Last().Id;
             referendum.VotingStart = DateTime.Now.AddMinutes(1);
             referendum.VotingEnd = DateTime.Now.AddMinutes(2);
             _context.Referendum.Add(referendum);
@@ -150,6 +166,39 @@ namespace VolksmondAPI.Controllers
             }
 
             _context.Problem.Remove(problem);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // POST: api/Problems/5
+        [HttpPost("{id}/Vote")]
+        public async Task<ActionResult<object>> Vote(int id, [FromBody] ReferendumVote _vote)
+        {
+            List<Referendum> referendums = await _context.Referendum.Where(r => r.ProblemId == id).ToListAsync();
+            var referendum = referendums.FirstOrDefault(r => r.Active);
+            if (referendum == null)
+            {
+                return NotFound();
+            }
+
+            var existingVote = await _context.ReferendumVote.FirstOrDefaultAsync(v => v.CitizenId == _vote.CitizenId && v.SolutionId == _vote.SolutionId);
+            if (existingVote == null)
+            {
+                int referendumVote = _context.Referendum.First(r => r.ProblemId == id).Id;
+                _vote.ReferendumId = referendumVote;
+                _context.ReferendumVote.Add(_vote);
+            }
+            else
+            {
+                if (existingVote.SolutionId == _vote.SolutionId)
+                    existingVote.SolutionId = 0;
+                else
+                    existingVote.SolutionId = _vote.SolutionId;
+
+                _context.Entry(existingVote).State = EntityState.Modified;
+            }
+
             await _context.SaveChangesAsync();
 
             return NoContent();

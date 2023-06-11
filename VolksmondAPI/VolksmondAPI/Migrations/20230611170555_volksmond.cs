@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VolksmondAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class allmodels : Migration
+    public partial class volksmond : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -36,12 +36,18 @@ namespace VolksmondAPI.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CitizenId = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PostDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PostDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Problem", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Problem_Citizen_CitizenId",
+                        column: x => x.CitizenId,
+                        principalTable: "Citizen",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -74,17 +80,24 @@ namespace VolksmondAPI.Migrations
                     ProblemId = table.Column<int>(type: "int", nullable: false),
                     CitizenId = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Text = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PostDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Solution", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Solution_Citizen_CitizenId",
+                        column: x => x.CitizenId,
+                        principalTable: "Citizen",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_Solution_Problem_ProblemId",
                         column: x => x.ProblemId,
                         principalTable: "Problem",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateTable(
@@ -118,8 +131,9 @@ namespace VolksmondAPI.Migrations
                     SolutionId = table.Column<int>(type: "int", nullable: false),
                     ReplyId = table.Column<int>(type: "int", nullable: true),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    IsPinned = table.Column<bool>(type: "bit", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: true),
+                    IsPinned = table.Column<bool>(type: "bit", nullable: true),
+                    PostDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -166,18 +180,23 @@ namespace VolksmondAPI.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ReplyId = table.Column<int>(type: "int", nullable: false),
                     CitizenId = table.Column<int>(type: "int", nullable: false),
-                    Vote = table.Column<int>(type: "int", nullable: false),
-                    Reply = table.Column<int>(type: "int", nullable: true)
+                    Vote = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ReplyVote", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ReplyVote_Reply_Reply",
-                        column: x => x.Reply,
+                        name: "FK_ReplyVote_Reply_ReplyId",
+                        column: x => x.ReplyId,
                         principalTable: "Reply",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Problem_CitizenId",
+                table: "Problem",
+                column: "CitizenId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Referendum_ProblemId",
@@ -200,9 +219,14 @@ namespace VolksmondAPI.Migrations
                 column: "SolutionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ReplyVote_Reply",
+                name: "IX_ReplyVote_ReplyId",
                 table: "ReplyVote",
-                column: "Reply");
+                column: "ReplyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Solution_CitizenId",
+                table: "Solution",
+                column: "CitizenId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Solution_ProblemId",
@@ -218,9 +242,6 @@ namespace VolksmondAPI.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Citizen");
-
             migrationBuilder.DropTable(
                 name: "ReferendumVote");
 
@@ -241,6 +262,9 @@ namespace VolksmondAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "Problem");
+
+            migrationBuilder.DropTable(
+                name: "Citizen");
         }
     }
 }

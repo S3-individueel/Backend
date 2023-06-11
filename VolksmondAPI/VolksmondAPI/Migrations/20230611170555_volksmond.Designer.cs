@@ -12,8 +12,8 @@ using VolksmondAPI.Data;
 namespace VolksmondAPI.Migrations
 {
     [DbContext(typeof(VolksmondAPIContext))]
-    [Migration("20230610222338_reply1")]
-    partial class reply1
+    [Migration("20230611170555_volksmond")]
+    partial class volksmond
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -67,7 +67,7 @@ namespace VolksmondAPI.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("PostDate")
+                    b.Property<DateTime?>("PostDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Title")
@@ -145,6 +145,9 @@ namespace VolksmondAPI.Migrations
                     b.Property<bool?>("IsPinned")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("PostDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("ReplyId")
                         .HasColumnType("int");
 
@@ -174,9 +177,6 @@ namespace VolksmondAPI.Migrations
                     b.Property<int>("CitizenId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Reply")
-                        .HasColumnType("int");
-
                     b.Property<int>("ReplyId")
                         .HasColumnType("int");
 
@@ -185,7 +185,7 @@ namespace VolksmondAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Reply");
+                    b.HasIndex("ReplyId");
 
                     b.ToTable("ReplyVote");
                 });
@@ -200,6 +200,9 @@ namespace VolksmondAPI.Migrations
 
                     b.Property<int>("CitizenId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("PostDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ProblemId")
                         .HasColumnType("int");
@@ -256,11 +259,13 @@ namespace VolksmondAPI.Migrations
 
             modelBuilder.Entity("VolksmondAPI.Models.Referendum", b =>
                 {
-                    b.HasOne("VolksmondAPI.Models.Problem", null)
+                    b.HasOne("VolksmondAPI.Models.Problem", "Problem")
                         .WithMany("Referendums")
                         .HasForeignKey("ProblemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Problem");
                 });
 
             modelBuilder.Entity("VolksmondAPI.Models.ReferendumVote", b =>
@@ -289,7 +294,9 @@ namespace VolksmondAPI.Migrations
                 {
                     b.HasOne("VolksmondAPI.Models.Reply", null)
                         .WithMany("Votes")
-                        .HasForeignKey("Reply");
+                        .HasForeignKey("ReplyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("VolksmondAPI.Models.Solution", b =>
@@ -300,13 +307,15 @@ namespace VolksmondAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("VolksmondAPI.Models.Problem", null)
-                        .WithMany("Solutions")
+                    b.HasOne("VolksmondAPI.Models.Problem", "Problem")
+                        .WithMany()
                         .HasForeignKey("ProblemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Citizen");
+
+                    b.Navigation("Problem");
                 });
 
             modelBuilder.Entity("VolksmondAPI.Models.SolutionVote", b =>
@@ -321,8 +330,6 @@ namespace VolksmondAPI.Migrations
             modelBuilder.Entity("VolksmondAPI.Models.Problem", b =>
                 {
                     b.Navigation("Referendums");
-
-                    b.Navigation("Solutions");
                 });
 
             modelBuilder.Entity("VolksmondAPI.Models.Referendum", b =>
