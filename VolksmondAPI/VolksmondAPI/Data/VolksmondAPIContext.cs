@@ -11,6 +11,10 @@ namespace VolksmondAPI.Data
 {
     public class VolksmondAPIContext : DbContext
     {
+        public VolksmondAPIContext()
+        {
+        }
+
         public VolksmondAPIContext (DbContextOptions<VolksmondAPIContext> options)
             : base(options)
         {
