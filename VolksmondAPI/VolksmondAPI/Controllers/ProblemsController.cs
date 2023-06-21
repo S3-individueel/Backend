@@ -52,19 +52,22 @@ namespace VolksmondAPI.Controllers
             problem.Citizen = await _context.Citizen.FirstAsync(c => c.Id == problem.CitizenId);
             problem.Referendums = await _context.Referendum.Where(r => r.ProblemId == problem.Id).ToListAsync();
 
-            foreach(var referendum in problem.Referendums)
+            if (problem.Referendums.Last().Ended == true)
             {
-                referendum.Votes = await _context.ReferendumVote.Where(v => v.ReferendumId == referendum.Id).ToListAsync();
-                var winningSolutionId = referendum.Votes?
-                    .Where(vote => vote.ReferendumId == referendum.Id)
-                    .GroupBy(vote => vote.SolutionId)
-                    .OrderByDescending(group => group.Count())
-                    .Select(group => group.Key)
-                    .FirstOrDefault();
+                foreach (var referendum in problem.Referendums)
+                {
+                    referendum.Votes = await _context.ReferendumVote.Where(v => v.ReferendumId == referendum.Id).ToListAsync();
+                    var winningSolutionId = referendum.Votes?
+                        .Where(vote => vote.ReferendumId == referendum.Id)
+                        .GroupBy(vote => vote.SolutionId)
+                        .OrderByDescending(group => group.Count())
+                        .Select(group => group.Key)
+                        .FirstOrDefault();
 
-                var winningSolution = _context.Solution.FirstOrDefault(solution => solution.Id == winningSolutionId);
-                referendum.WinningSolution = winningSolution;
-                referendum.WinningSolution.Problem = null;
+                    var winningSolution = _context.Solution.FirstOrDefault(solution => solution.Id == winningSolutionId);
+                    referendum.WinningSolution = winningSolution;
+                    referendum.WinningSolution.Problem = null;
+                }
             }
 
             if (problem == null)
