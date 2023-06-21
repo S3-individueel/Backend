@@ -142,7 +142,8 @@ namespace VolksmondAPI.Controllers
             await _context.SaveChangesAsync();
 
             Referendum referendum = new Referendum();
-            referendum.ProblemId = _context.Problem.Order().Last().Id;
+            var ProblemContext = _context.Problem.AsEnumerable();
+            referendum.ProblemId = ProblemContext.Last().Id;
             referendum.VotingStart = DateTime.Now.AddMinutes(1);
             referendum.VotingEnd = DateTime.Now.AddMinutes(2);
             _context.Referendum.Add(referendum);
