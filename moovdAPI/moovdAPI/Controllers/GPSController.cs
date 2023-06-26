@@ -36,7 +36,7 @@ namespace moovdAPI.Controllers
             }
 
             var paginatedData = _context.GPS.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
-            return await paginatedData;
+            return await paginatedData; 
         }
 
         // GET: api/GPS/5
